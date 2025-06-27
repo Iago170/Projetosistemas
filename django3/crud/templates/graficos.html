@@ -1,0 +1,95 @@
+<!DOCTYPE html>
+<html lang="pt-br">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no">
+  <title>Gráficos</title>
+  <!-- Bootstrap 5 -->
+  <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+  <!-- Font Awesome -->
+  <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" rel="stylesheet">
+  <script src="https://cdn.plot.ly/plotly-latest.min.js"></script>
+  <style>
+    body { background-color: #f8f9fa; }
+    .chart-card { min-height: 300px; }
+    .btn-toggle .btn { margin-right: .5rem; }
+  </style>
+</head>
+<body>
+  <nav class="navbar navbar-expand-lg navbar-dark bg-primary">
+    <div class="container-fluid">
+      <a class="navbar-brand" href="#"><i class="fas fa-chart-pie"></i> Dashboard</a>
+      <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navMenu" aria-controls="navMenu" aria-expanded="false" aria-label="Toggle navigation">
+        <span class="navbar-toggler-icon"></span>
+      </button>
+      <div class="collapse navbar-collapse" id="navMenu">
+        <ul class="navbar-nav me-auto">
+          <li class="nav-item"><a class="nav-link" href="{% url 'listagem' %}">Listagem</a></li>
+          <li class="nav-item"><a class="nav-link" href="{% url 'insercao' %}">Novo</a></li>
+          <li class="nav-item"><a class="nav-link active" href="{% url 'graficos' %}">Gráficos</a></li>
+        </ul>
+        <ul class="navbar-nav ms-auto">
+          <li class="nav-item"><a class="nav-link" href="{% url 'logout' %}"><i class="fas fa-sign-out-alt"></i> Logout</a></li>
+        </ul>
+      </div>
+    </div>
+  </nav>
+
+  <div class="container my-5">
+    <div class="d-flex justify-content-between align-items-center mb-4">
+      <h2>{{ titulo }}</h2>
+      <div class="btn-toggle btn-group" role="group" aria-label="Tipo de gráfico">
+        <button type="button" class="btn btn-outline-primary active" data-type="bar"><i class="fas fa-chart-bar"></i> Faixa Etária</button>
+        <button type="button" class="btn btn-outline-primary" data-type="pie"><i class="fas fa-chart-pie"></i> Média Salarial</button>
+      </div>
+    </div>
+
+    <div class="card shadow chart-card">
+      <div class="card-body p-0">
+        <!-- Dados embutidos como data-attributes -->
+        <div id="chart" class="w-100" style="height: 400px;"
+             data-salario-m="{{ salarioM|default:0 }}"
+             data-salario-f="{{ salarioF|default:0 }}"
+             data-idade-m="{{ idadeM|default:0 }}"
+             data-idade-f="{{ idadeF|default:0 }}">
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Bootstrap JS Bundle -->
+  <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+  <script>
+    document.querySelectorAll('.btn-toggle .btn').forEach(btn => {
+      btn.addEventListener('click', () => {
+        document.querySelectorAll('.btn-toggle .btn').forEach(b => b.classList.remove('active'));
+        btn.classList.add('active');
+        renderChart(btn.getAttribute('data-type'));
+      });
+    });
+
+    function renderChart(type = 'bar') {
+      const chartEl = document.getElementById('chart');
+      const mSal = parseFloat(chartEl.dataset.salarioM) || 0;
+      const fSal = parseFloat(chartEl.dataset.salarioF) || 0;
+      const mAge = parseFloat(chartEl.dataset.idadeM) || 0;
+      const fAge = parseFloat(chartEl.dataset.idadeF) || 0;
+
+      let trace;
+      if (type === 'pie') {
+        trace = { values: [mSal, fSal], labels: ['Masculino', 'Feminino'], type: 'pie', hole: .3 };
+      } else {
+        trace = { x: ['Masculino', 'Feminino'], y: [mAge, fAge], type: 'bar' };
+      }
+
+      Plotly.newPlot(chartEl, [trace], {
+        margin: { t: 30, l: 40, r: 20, b: 40 },
+        font: { family: 'Arial, sans-serif' }
+      });
+    }
+
+    // Render inicial
+    renderChart('bar');
+  </script>
+</body>
+</html>
